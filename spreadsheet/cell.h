@@ -5,32 +5,35 @@
 
 #include <functional>
 #include <unordered_set>
+#include <optional>
+#include <set>
+#include <map>
 
 class Sheet;
+class Impl;
 
 class Cell : public CellInterface {
 public:
     Cell(Sheet& sheet);
     ~Cell();
 
-    void Set(std::string text);
+    void Set(std::string text, Position pos);
     void Clear();
 
     Value GetValue() const override;
     std::string GetText() const override;
     std::vector<Position> GetReferencedCells() const override;
-
-    bool IsReferenced() const;
+    double GetCache() const;
+    bool GetImpl();
 
 private:
     class Impl;
     class EmptyImpl;
     class TextImpl;
     class FormulaImpl;
-
     std::unique_ptr<Impl> impl_;
-
-    // Р”РѕР±Р°РІСЊС‚Рµ РїРѕР»СЏ Рё РјРµС‚РѕРґС‹ РґР»СЏ СЃРІСЏР·Рё СЃ С‚Р°Р±Р»РёС†РµР№, РїСЂРѕРІРµСЂРєРё С†РёРєР»РёС‡РµСЃРєРёС… 
-    // Р·Р°РІРёСЃРёРјРѕСЃС‚РµР№, РіСЂР°С„Р° Р·Р°РІРёСЃРёРјРѕСЃС‚РµР№ Рё С‚. Рґ.
-
+    Sheet& sheet_;
+    mutable std::optional<double> cache_;
+    // Добавьте поля и методы для связи с таблицей, проверки циклических 
+    // зависимостей, графа зависимостей и т. д.
 };
