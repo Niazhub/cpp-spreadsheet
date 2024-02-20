@@ -22,26 +22,11 @@ void Sheet::SetCell(Position pos, std::string text) {
     // Убедимся, что есть достаточное количество строк и столбцов
     EnsureRowsAndCols(pos.row + 1, pos.col + 1);
 
-    /*std::string cach_;
-    bool is_cach_ = false;*/
-
     if (!sheet_[pos.row][pos.col]) {
         sheet_[pos.row][pos.col] = std::make_unique<Cell>(*this);
     }
-    /*else {
-        if (sheet_[pos.row][pos.col]->GetImpl()) {
-            cach_ = sheet_[pos.row][pos.col]->GetText();
-            is_cach_ = true;
-        }
-    }*/
-    sheet_[pos.row][pos.col]->Set(text, pos);
 
-    /*if (HasCyclicDependenciesForCell(pos)) {
-        if (is_cach_) {
-            sheet_[pos.row][pos.col]->Set(cach_);
-        }
-        throw CircularDependencyException("");
-    }*/
+    sheet_[pos.row][pos.col]->Set(text, pos);
 
     // Обновляем размер области, участвующей в печати
     size_.rows = std::max(size_.rows, pos.row + 1);

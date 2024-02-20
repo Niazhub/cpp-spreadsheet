@@ -167,14 +167,3 @@ std::string Cell::GetText() const {
 std::vector<Position> Cell::GetReferencedCells() const {
     return impl_->GetReferencedCells();
 }
-
-double Cell::GetCache() const {
-    return cache_.value();
-}
-
-bool Cell::GetImpl() {
-    if (impl_ == nullptr) {
-        return false;
-    }
-    return true;
-}

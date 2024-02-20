@@ -23,8 +23,6 @@ public:
     Value GetValue() const override;
     std::string GetText() const override;
     std::vector<Position> GetReferencedCells() const override;
-    double GetCache() const;
-    bool GetImpl();
 
 private:
     class Impl;
