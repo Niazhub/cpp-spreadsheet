@@ -23,6 +23,10 @@ public:
     Value GetValue() const override;
     std::string GetText() const override;
     std::vector<Position> GetReferencedCells() const override;
+    void GetTextCash();
+    void ReferencedCells();
+    void FindCyclicDependencies(Position pos);
+    void UpdateCache();
 
 private:
     class Impl;
@@ -32,6 +36,8 @@ private:
     std::unique_ptr<Impl> impl_;
     Sheet& sheet_;
     mutable std::optional<double> cache_;
+    std::string text_cash;
+    bool is_text_cash = false;
     // Добавьте поля и методы для связи с таблицей, проверки циклических 
     // зависимостей, графа зависимостей и т. д.
 };

@@ -146,31 +146,27 @@ namespace ASTImpl {
                 double lhs_value = lhs_->Evaluate(args);
                 double rhs_value = rhs_->Evaluate(args);
 
+                double result;
                 switch (type_) {
                 case Add:
-                    if (lhs_value + rhs_value > std::numeric_limits<double>::max()) {
-                        throw FormulaError(FormulaError::Category::Div0);
-                    }
-                    return lhs_value + rhs_value;
+                    result = lhs_value + rhs_value;
+                    break;
                 case Subtract:
-                    if (lhs_value - rhs_value < -std::numeric_limits<double>::max()) {
-                        throw FormulaError(FormulaError::Category::Div0);
-                    }
-                    return lhs_value - rhs_value;
+                    result = lhs_value - rhs_value;
+                    break;
                 case Multiply:
-                    if (lhs_value * rhs_value > std::numeric_limits<double>::max()) {
-                        throw FormulaError(FormulaError::Category::Div0);
-                    }
-                    return lhs_value * rhs_value;
+                    result = lhs_value * rhs_value;
+                    break;
                 case Divide:
-                    // Check for division by zero
-                    if (!std::isfinite(lhs_value / rhs_value)) {
-                        throw FormulaError(FormulaError::Category::Div0);
-                    }
-                    return lhs_value / rhs_value;
+                    result = lhs_value / rhs_value;
+                    break;
                 default:
                     throw FormulaError(FormulaError::Category::Value);
                 }
+                if (!std::isfinite(result)) {
+                    throw FormulaError(FormulaError::Category::Div0);
+                }
+                return result;
             }
 
         private:

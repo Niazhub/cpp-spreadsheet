@@ -17,11 +17,11 @@ public:
 class Cell::EmptyImpl : public Impl {
 public:
     Value GetValue() const override {
-        return Value(); // Возвращаем пустое значение для пустой ячейки
+        return Value(0.0); // Возвращаем пустое значение для пустой ячейки
     }
 
     std::string GetText() const override {
-        return std::string(); // Возвращаем пустое значение для пустой ячейки
+        return std::string(""); // Возвращаем пустое значение для пустой ячейки
     }
 
     std::vector<Position> GetReferencedCells() const override {
@@ -42,9 +42,6 @@ public:
             if (pos == text_.size()) {
                 return Value(integerValue);
             }
-            if (text_ == "") {
-                return Value(0.0);
-            }
             if (text_[0] == ESCAPE_SIGN) {
                 return Value(text_.substr(1));
             }
@@ -52,9 +49,6 @@ public:
         }
         catch (const std::exception&)
         {
-            if (text_ == "") {
-                return Value(0.0);
-            }
             if (text_[0] == ESCAPE_SIGN) {
                 return Value(text_.substr(1));
             }
@@ -114,33 +108,15 @@ Cell::Cell(Sheet& sheet)
 Cell::~Cell() = default;
 
 void Cell::Set(std::string text, Position pos) {
-    if (text.size() > 1 && text[0] == FORMULA_SIGN) {
-        string cash;
-        bool is_cash = false;
-        if (impl_ != nullptr) {
-            cash = impl_->GetText();
-            is_cash = true;
-        }
+    if (text.empty()) {
+        Clear();
+    }
+    else if (text.size() > 1 && text[0] == FORMULA_SIGN) {
+        GetTextCash();
         impl_ = std::make_unique<FormulaImpl>(ParseFormula(text.substr(1)), sheet_);
-        for(auto cell : GetReferencedCells()) {
-            if (sheet_.GetCell(cell) == nullptr) {
-                sheet_.SetCell(cell, "");
-            }
-        }
-        if (sheet_.IsCyclic(pos)) {
-            if (is_cash) {
-                if (cash.size() > 1 && cash[0] == FORMULA_SIGN) {
-                    impl_ = std::make_unique<FormulaImpl>(ParseFormula(cash.substr(1)), sheet_);
-                }
-                else {
-                    impl_ = std::make_unique<TextImpl>(cash);
-                }
-            }
-            throw CircularDependencyException("CircularDependencyException");
-        }
-        if (std::holds_alternative<double>(impl_->GetValue())) {
-            cache_ = std::get<double>(impl_->GetValue());
-        }
+        ReferencedCells();
+        FindCyclicDependencies(pos);
+        UpdateCache();
     }
     else {
         impl_ = std::make_unique<TextImpl>(text);
@@ -148,7 +124,7 @@ void Cell::Set(std::string text, Position pos) {
 }
 
 void Cell::Clear() {
-    impl_.reset();
+    impl_ = std::make_unique<EmptyImpl>();
 }
 
 Cell::Value Cell::GetValue() const {
@@ -166,4 +142,39 @@ std::string Cell::GetText() const {
 
 std::vector<Position> Cell::GetReferencedCells() const {
     return impl_->GetReferencedCells();
+}
+
+void Cell::FindCyclicDependencies(Position pos) {
+    if (sheet_.IsCyclic(pos)) {
+        if (is_text_cash) {
+            if (text_cash.size() > 1 && text_cash[0] == FORMULA_SIGN) {
+                impl_ = std::make_unique<FormulaImpl>(ParseFormula(text_cash.substr(1)), sheet_);
+            }
+            else {
+                impl_ = std::make_unique<TextImpl>(text_cash);
+            }
+        }
+        throw CircularDependencyException("CircularDependencyException");
+    }
+}
+
+void Cell::UpdateCache() {
+    if (std::holds_alternative<double>(impl_->GetValue())) {
+        cache_ = std::get<double>(impl_->GetValue());
+    }
+}
+
+void Cell::GetTextCash() {
+    if (impl_ != nullptr) {
+        text_cash = impl_->GetText();
+        is_text_cash = true;
+    }
+}
+
+void Cell::ReferencedCells() {
+    for (auto cell : GetReferencedCells()) {
+        if (sheet_.GetCell(cell) == nullptr) {
+            sheet_.SetCell(cell, "");
+        }
+    }
 }

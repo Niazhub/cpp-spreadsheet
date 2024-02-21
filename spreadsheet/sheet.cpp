@@ -19,7 +19,6 @@ void Sheet::SetCell(Position pos, std::string text) {
         throw InvalidPositionException("Invalid position");
     }
 
-    // Убедимся, что есть достаточное количество строк и столбцов
     EnsureRowsAndCols(pos.row + 1, pos.col + 1);
 
     if (!sheet_[pos.row][pos.col]) {
@@ -48,9 +47,9 @@ CellInterface* Sheet::GetCell(Position pos) {
 }
 
 void Sheet::ClearCell(Position pos) {
+    //Не разобрался, как красиво и без дублирования можно сделать
     if (pos.IsValid() && pos.row < static_cast<int>(sheet_.size()) && pos.col < static_cast<int>(sheet_[pos.row].size())) {
         sheet_[pos.row][pos.col].reset();
-
         UpdatePrintableSize();
     }
     else if(!pos.IsValid()){
